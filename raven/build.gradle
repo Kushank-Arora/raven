@@ -33,4 +33,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'android.arch.persistence.room:runtime:1.1.0-alpha3'
     annotationProcessor 'android.arch.persistence.room:compiler:1.1.0-alpha3'
+    compile 'com.google.code.gson:gson:2.8.2'
 }
