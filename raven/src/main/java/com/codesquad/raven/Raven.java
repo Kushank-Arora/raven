@@ -38,8 +38,8 @@ public abstract class Raven {
      *
      * @param context Context which wants messages send by 'it' to be deleted.
      */
-    public void startFreshCommunication(Context context, OnMessagesDeletedListener listener) {
-        startFreshCommunication(context.getClass(), listener);
+    public void deletePrevCommunication(Context context, OnMessagesDeletedListener listener) {
+        deletePrevCommunication(context.getClass(), listener);
     }
 
     /**
@@ -47,7 +47,7 @@ public abstract class Raven {
      *
      * @param from Class to whose intended data is to be gathered.
      */
-    public static void startFreshCommunication(final Class from, final OnMessagesDeletedListener listener) {
+    public static void deletePrevCommunication(final Class from, final OnMessagesDeletedListener listener) {
         new Thread(
                 new Runnable() {
                     @Override
@@ -108,10 +108,9 @@ public abstract class Raven {
      *
      * @param context      Context in which the data is to be retrieved.
      * @param key          Key with which the intended data was mapped.
-     * @param classOfValue Class of the intended value.
      */
-    public static void getValue(Context context, String key, Class classOfValue, OnSingleMessageLoadedListener listener) {
-        getValue(context.getClass(), key, classOfValue, listener);
+    public static void getValue(Context context, String key, OnSingleMessageLoadedListener listener) {
+        getValue(context.getClass(), key, listener);
     }
 
     /**
@@ -119,9 +118,8 @@ public abstract class Raven {
      *
      * @param thisClass    Class to whose intended data is to be gathered.
      * @param key          Key with which the intended data was mapped.
-     * @param classOfValue Class of the intended value.
      */
-    public static void getValue(final Class thisClass, final String key, Class classOfValue, final OnSingleMessageLoadedListener listener) {
+    public static void getValue(final Class thisClass, final String key, final OnSingleMessageLoadedListener listener) {
         if (listener != null) {
             new Thread(new Runnable() {
                 @Override
@@ -169,6 +167,7 @@ public abstract class Raven {
                         }
 
                         MessageDatabase db = MessageDatabase.getMessageDatabase(null);
+                        db.messageDao().deleteMessagesFor(to.getName());
                         db.messageDao().insertAll(listValues);
                         if (listener != null) {
                             listener.onMessagesSaved();
@@ -186,6 +185,35 @@ public abstract class Raven {
      */
     public static RavenInstance startCommunication(Class from, Class to) {
         return new RavenInstance(from, to);
+    }
+
+    /**
+     * It is used to send Data from One Activity/Fragment to another using kkey value pairs.
+     *
+     * @param from the context of sending the message
+     * @param to   the class, to which the message is intended.
+     */
+    public static RavenInstance startCommunication(Context from, Class to) {
+        return new RavenInstance(from.getClass(), to);
+    }
+
+    /**
+     * This deletes all data intended to this Activity/Fragment.
+     */
+    public static void cleanup(final Context intendedTo, final OnMessagesDeletedListener listener) {
+        new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        MessageDatabase db = MessageDatabase.getMessageDatabase(null);
+                        db.messageDao().deleteMessagesFor(intendedTo.getClass().getName());
+
+                        if (listener != null) {
+                            listener.onMessagesDeleted();
+                        }
+                    }
+                }
+        ).start();
     }
 
     /**
@@ -226,7 +254,7 @@ public abstract class Raven {
         ).start();
     }
 
-    static class RavenInstance {
+    public static class RavenInstance {
         Class from;
         Class to;
         List<PairModel> keyValuePairs;
@@ -237,7 +265,7 @@ public abstract class Raven {
          * @param from The class going to send.
          * @param to   The class going to receive.
          */
-        RavenInstance(Class from, Class to) {
+        private RavenInstance(Class from, Class to) {
             this.from = from;
             this.to = to;
             keyValuePairs = new ArrayList<>();
@@ -249,11 +277,11 @@ public abstract class Raven {
          * @param from The context in which it is going to send.
          * @param to   The class going to receive.
          */
-        RavenInstance(Context from, Class to) {
+        private RavenInstance(Context from, Class to) {
             this(from.getClass(), to);
         }
 
-        RavenInstance add(String key, Object value) {
+        public RavenInstance add(String key, Object value) {
             keyValuePairs.add(new PairModel(
                     key,
                     (new Gson()).toJson(value),
@@ -262,7 +290,7 @@ public abstract class Raven {
             return this;
         }
 
-        void save(OnMessagesSavedListener listener) {
+        public void save(OnMessagesSavedListener listener) {
             Raven.setValue(from, to, keyValuePairs, listener);
         }
     }
