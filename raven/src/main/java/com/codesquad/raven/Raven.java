@@ -1,6 +1,8 @@
 package com.codesquad.raven;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.codesquad.raven.repository.Message;
 import com.codesquad.raven.repository.MessageDatabase;
@@ -29,7 +31,7 @@ public abstract class Raven {
      * Database Instantiation is expensive, thus should be done once,
      * and thus should be done once, i.e., in Application Class
      */
-    public static void init(Context context) {
+    public static void init(@NonNull Context context) {
         MessageDatabase.getMessageDatabase(context);
     }
 
@@ -38,7 +40,7 @@ public abstract class Raven {
      *
      * @param context Context which wants messages send by 'it' to be deleted.
      */
-    public void deletePrevCommunication(Context context, OnMessagesDeletedListener listener) {
+    public void deletePrevCommunication(@NonNull Context context, OnMessagesDeletedListener listener) {
         deletePrevCommunication(context.getClass(), listener);
     }
 
@@ -47,7 +49,7 @@ public abstract class Raven {
      *
      * @param from Class to whose intended data is to be gathered.
      */
-    public static void deletePrevCommunication(final Class from, final OnMessagesDeletedListener listener) {
+    public static void deletePrevCommunication(@NonNull final Class from, final OnMessagesDeletedListener listener) {
         new Thread(
                 new Runnable() {
                     @Override
@@ -68,7 +70,7 @@ public abstract class Raven {
      *
      * @param context Context in which the data is to be retrieved.
      */
-    public static void getValues(Context context, OnMessagesLoadedListener listener) {
+    public static void getValues(@NonNull Context context, OnMessagesLoadedListener listener) {
         getValues(context.getClass(), listener);
     }
 
@@ -77,7 +79,7 @@ public abstract class Raven {
      *
      * @param thisClass Class to whose intended data is to be gathered.
      */
-    public static void getValues(final Class thisClass, final OnMessagesLoadedListener listener) {
+    public static void getValues(@NonNull final Class thisClass, final OnMessagesLoadedListener listener) {
         if (listener != null) {
             new Thread(new Runnable() {
                 @Override
@@ -90,7 +92,9 @@ public abstract class Raven {
                         try {
                             mapData.put(
                                     pair.getKeyMessage(),
-                                    gson.fromJson(pair.getValueMessage(), Class.forName(pair.getValueType()))
+                                    pair.getValueMessage() == null
+                                            ? null
+                                            : gson.fromJson(pair.getValueMessage(), Class.forName(pair.getValueType()))
                             );
                         } catch (ClassNotFoundException e) {
                             //TODO: remove this.
@@ -106,20 +110,20 @@ public abstract class Raven {
     /**
      * It returns the object mapped with `key` passed to this Activity/Fragment.
      *
-     * @param context      Context in which the data is to be retrieved.
-     * @param key          Key with which the intended data was mapped.
+     * @param context Context in which the data is to be retrieved.
+     * @param key     Key with which the intended data was mapped.
      */
-    public static void getValue(Context context, String key, OnSingleMessageLoadedListener listener) {
+    public static void getValue(@NonNull Context context, @NonNull String key, OnSingleMessageLoadedListener listener) {
         getValue(context.getClass(), key, listener);
     }
 
     /**
      * It returns the object mapped with `key` passed to this Activity / Fragment.
      *
-     * @param thisClass    Class to whose intended data is to be gathered.
-     * @param key          Key with which the intended data was mapped.
+     * @param thisClass Class to whose intended data is to be gathered.
+     * @param key       Key with which the intended data was mapped.
      */
-    public static void getValue(final Class thisClass, final String key, final OnSingleMessageLoadedListener listener) {
+    public static void getValue(@NonNull final Class thisClass, @NonNull final String key, final OnSingleMessageLoadedListener listener) {
         if (listener != null) {
             new Thread(new Runnable() {
                 @Override
@@ -127,14 +131,18 @@ public abstract class Raven {
                     MessageDatabase db = MessageDatabase.getMessageDatabase(null);
                     PairModel value = db.messageDao().findValueFor(thisClass.getName(), key);
                     try {
-                        listener.onSingleMessageLoaded(
-                                (new Gson()).fromJson(
-                                        value.getValueMessage(),
-                                        Class.forName(value.getValueType()
-                                        ))
-                        );
+                        if (value == null || value.getValueMessage() == null) {
+                            listener.onSingleMessageLoaded(null);
+                        } else {
+                            listener.onSingleMessageLoaded(
+                                    (new Gson()).fromJson(
+                                            value.getValueMessage(),
+                                            Class.forName(value.getValueType())
+                                    )
+                            );
+                        }
                     } catch (ClassNotFoundException e) {
-                        //TODO : remove this
+                        listener.onSingleMessageLoaded(null);
                         e.printStackTrace();
                     }
                 }
@@ -149,7 +157,7 @@ public abstract class Raven {
      * @param to            the class going to receive it.
      * @param keyValuePairs data
      */
-    private static void setValue(final Class from, final Class to, final List<PairModel> keyValuePairs, final OnMessagesSavedListener listener) {
+    private static void setValue(@NonNull final Class from, @NonNull final Class to, @NonNull final List<PairModel> keyValuePairs, final OnMessagesSavedListener listener) {
 
         new Thread(
                 new Runnable() {
@@ -200,7 +208,7 @@ public abstract class Raven {
     /**
      * This deletes all data intended to this Activity/Fragment.
      */
-    public static void cleanup(final Context intendedTo, final OnMessagesDeletedListener listener) {
+    public static void cleanup(@NonNull final Context intendedTo, final OnMessagesDeletedListener listener) {
         new Thread(
                 new Runnable() {
                     @Override
@@ -219,7 +227,7 @@ public abstract class Raven {
     /**
      * This deletes all data intended to this Activity/Fragment.
      */
-    public static void cleanup(final Class intendedTo, final OnMessagesDeletedListener listener) {
+    public static void cleanup(@NonNull final Class intendedTo, final OnMessagesDeletedListener listener) {
         new Thread(
                 new Runnable() {
                     @Override
@@ -265,7 +273,7 @@ public abstract class Raven {
          * @param from The class going to send.
          * @param to   The class going to receive.
          */
-        private RavenInstance(Class from, Class to) {
+        private RavenInstance(@NonNull Class from, @NonNull Class to) {
             this.from = from;
             this.to = to;
             keyValuePairs = new ArrayList<>();
@@ -277,15 +285,15 @@ public abstract class Raven {
          * @param from The context in which it is going to send.
          * @param to   The class going to receive.
          */
-        private RavenInstance(Context from, Class to) {
+        private RavenInstance(@NonNull Context from, @NonNull Class to) {
             this(from.getClass(), to);
         }
 
-        public RavenInstance add(String key, Object value) {
+        public RavenInstance add(@NonNull String key, @Nullable Object value) {
             keyValuePairs.add(new PairModel(
                     key,
                     (new Gson()).toJson(value),
-                    value.getClass().getName()
+                    value == null ? null : value.getClass().getName()
             ));
             return this;
         }
