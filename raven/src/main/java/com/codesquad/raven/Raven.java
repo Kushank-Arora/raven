@@ -38,7 +38,7 @@ public abstract class Raven {
      *
      * @param context Context which wants messages send by 'it' to be deleted.
      */
-    public void deletePrevCommunication(Context context, OnMessagesDeletedListener listener) {
+    public static void deletePrevCommunication(Context context, OnMessagesDeletedListener listener) {
         deletePrevCommunication(context.getClass(), listener);
     }
 
@@ -106,8 +106,8 @@ public abstract class Raven {
     /**
      * It returns the object mapped with `key` passed to this Activity/Fragment.
      *
-     * @param context      Context in which the data is to be retrieved.
-     * @param key          Key with which the intended data was mapped.
+     * @param context Context in which the data is to be retrieved.
+     * @param key     Key with which the intended data was mapped.
      */
     public static void getValue(Context context, String key, OnSingleMessageLoadedListener listener) {
         getValue(context.getClass(), key, listener);
@@ -116,8 +116,8 @@ public abstract class Raven {
     /**
      * It returns the object mapped with `key` passed to this Activity / Fragment.
      *
-     * @param thisClass    Class to whose intended data is to be gathered.
-     * @param key          Key with which the intended data was mapped.
+     * @param thisClass Class to whose intended data is to be gathered.
+     * @param key       Key with which the intended data was mapped.
      */
     public static void getValue(final Class thisClass, final String key, final OnSingleMessageLoadedListener listener) {
         if (listener != null) {
@@ -201,19 +201,7 @@ public abstract class Raven {
      * This deletes all data intended to this Activity/Fragment.
      */
     public static void cleanup(final Context intendedTo, final OnMessagesDeletedListener listener) {
-        new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        MessageDatabase db = MessageDatabase.getMessageDatabase(null);
-                        db.messageDao().deleteMessagesFor(intendedTo.getClass().getName());
-
-                        if (listener != null) {
-                            listener.onMessagesDeleted();
-                        }
-                    }
-                }
-        ).start();
+        cleanup(intendedTo.getClass(), listener);
     }
 
     /**
