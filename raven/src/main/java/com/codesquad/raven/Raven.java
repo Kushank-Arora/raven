@@ -6,6 +6,7 @@ import com.codesquad.raven.repository.Message;
 import com.codesquad.raven.repository.MessageDatabase;
 import com.codesquad.raven.repository.PairModel;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,18 +85,14 @@ public abstract class Raven {
                 public void run() {
                     MessageDatabase db = MessageDatabase.getMessageDatabase(null);
                     List<PairModel> listData = db.messageDao().findMessageFor(thisClass.getName());
-                    Map<String, Object> mapData = new HashMap<>();
+                    RavenMap mapData = new RavenMap();
                     Gson gson = new Gson();
                     for (PairModel pair : listData) {
-                        try {
-                            mapData.put(
-                                    pair.getKeyMessage(),
-                                    gson.fromJson(pair.getValueMessage(), Class.forName(pair.getValueType()))
-                            );
-                        } catch (ClassNotFoundException e) {
-                            //TODO: remove this.
-                            e.printStackTrace();
-                        }
+                        mapData.put(
+                                pair.getKeyMessage(),
+                                pair.getValueMessage()
+                        );
+
                     }
                     listener.onMessagesLoaded(mapData);
                 }
@@ -107,10 +104,15 @@ public abstract class Raven {
      * It returns the object mapped with `key` passed to this Activity/Fragment.
      *
      * @param context Context in which the data is to be retrieved.
+     * @param type Type of the final result.
      * @param key     Key with which the intended data was mapped.
      */
-    public static void getValue(Context context, String key, OnSingleMessageLoadedListener listener) {
-        getValue(context.getClass(), key, listener);
+    public static <T> void getValue(
+            final Context context,
+            final String key,
+            final TypeToken<T> type,
+            final OnSingleMessageLoadedListener listener) {
+        getValue(context.getClass(), key, type, listener);
     }
 
     /**
@@ -119,24 +121,23 @@ public abstract class Raven {
      * @param thisClass Class to whose intended data is to be gathered.
      * @param key       Key with which the intended data was mapped.
      */
-    public static void getValue(final Class thisClass, final String key, final OnSingleMessageLoadedListener listener) {
+    public static <T> void getValue(final Class thisClass,
+                                    final String key,
+                                    final TypeToken<T> type,
+                                    final OnSingleMessageLoadedListener listener) {
         if (listener != null) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     MessageDatabase db = MessageDatabase.getMessageDatabase(null);
                     PairModel value = db.messageDao().findValueFor(thisClass.getName(), key);
-                    try {
-                        listener.onSingleMessageLoaded(
-                                (new Gson()).fromJson(
-                                        value.getValueMessage(),
-                                        Class.forName(value.getValueType()
-                                        ))
-                        );
-                    } catch (ClassNotFoundException e) {
-                        //TODO : remove this
-                        e.printStackTrace();
-                    }
+                    listener.onSingleMessageLoaded(
+                            (new Gson()).fromJson(
+                                    value.getValueMessage(),
+                                    type.getType()
+                            )
+                    );
+
                 }
             }).start();
         }
@@ -161,8 +162,7 @@ public abstract class Raven {
                                     from.getName(),
                                     to.getName(),
                                     keyValuePair.getKeyMessage(),
-                                    keyValuePair.getValueMessage(),
-                                    keyValuePair.getValueType()
+                                    keyValuePair.getValueMessage()
                             ));
                         }
 
@@ -272,8 +272,7 @@ public abstract class Raven {
         public RavenInstance add(String key, Object value) {
             keyValuePairs.add(new PairModel(
                     key,
-                    (new Gson()).toJson(value),
-                    value.getClass().getName()
+                    (new Gson()).toJson(value)
             ));
             return this;
         }
@@ -288,11 +287,11 @@ public abstract class Raven {
     }
 
     public interface OnMessagesLoadedListener {
-        void onMessagesLoaded(Map<String, Object> messages);
+        void onMessagesLoaded(RavenMap messages);
     }
 
-    public interface OnSingleMessageLoadedListener {
-        void onSingleMessageLoaded(Object value);
+    public interface OnSingleMessageLoadedListener<T> {
+        void onSingleMessageLoaded(T value);
     }
 
     public interface OnMessagesSavedListener {

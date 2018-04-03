@@ -10,10 +10,10 @@ import java.util.List;
 @Dao
 public interface MessageDao {
 
-    @Query("SELECT key_message, value_message, value_type FROM raven_message WHERE whom = :whom")
+    @Query("SELECT key_message, value_message FROM raven_message WHERE whom = :whom")
     List<PairModel> findMessageFor(String whom);
 
-    @Query("SELECT key_message, value_message, value_type FROM raven_message WHERE whom = :whom AND key_message = :key")
+    @Query("SELECT key_message, value_message FROM raven_message WHERE whom = :whom AND key_message = :key")
     PairModel findValueFor(String whom, String key);
 
     @Insert

@@ -10,13 +10,9 @@ public class PairModel {
     @ColumnInfo(name = "value_message")
     private String valueMessage;
 
-    @ColumnInfo(name = "value_type")
-    private String valueType;
-
-    public PairModel(String keyMessage, String valueMessage, String valueType) {
+    public PairModel(String keyMessage, String valueMessage) {
         this.keyMessage = keyMessage;
         this.valueMessage = valueMessage;
-        this.valueType = valueType;
     }
 
     public PairModel() {
@@ -36,13 +32,5 @@ public class PairModel {
 
     public void setValueMessage(String valueMessage) {
         this.valueMessage = valueMessage;
-    }
-
-    public String getValueType() {
-        return valueType;
-    }
-
-    public void setValueType(String valueType) {
-        this.valueType = valueType;
     }
 }
