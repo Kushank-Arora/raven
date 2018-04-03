@@ -31,7 +31,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    compile 'android.arch.persistence.room:runtime:1.1.0-alpha3'
-    annotationProcessor 'android.arch.persistence.room:compiler:1.1.0-alpha3'
+    compile 'android.arch.persistence.room:runtime:1.1.0-beta1'
+    annotationProcessor 'android.arch.persistence.room:compiler:1.1.0-beta1'
     compile 'com.google.code.gson:gson:2.8.2'
 }
