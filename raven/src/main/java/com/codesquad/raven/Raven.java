@@ -104,7 +104,7 @@ public abstract class Raven {
      * It returns the object mapped with `key` passed to this Activity/Fragment.
      *
      * @param context Context in which the data is to be retrieved.
-     * @param type Type of the final result.
+     * @param type    Type of the final result.
      * @param key     Key with which the intended data was mapped.
      */
     public static <T> void getValue(
@@ -119,6 +119,7 @@ public abstract class Raven {
      * It returns the object mapped with `key` passed to this Activity / Fragment.
      *
      * @param thisClass Class to whose intended data is to be gathered.
+     * @param type      Type of the final result.
      * @param key       Key with which the intended data was mapped.
      */
     public static <T> void getValue(final Class thisClass,
