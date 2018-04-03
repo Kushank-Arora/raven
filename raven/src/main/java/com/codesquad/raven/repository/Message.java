@@ -22,9 +22,6 @@ public class Message {
     @ColumnInfo(name = "value_message")
     private String valueMessage;
 
-    @ColumnInfo(name = "value_type")
-    private String valueType;
-
     public long getId() {
         return id;
     }
@@ -65,20 +62,11 @@ public class Message {
         this.valueMessage = valueMessage;
     }
 
-    public String getValueType() {
-        return valueType;
-    }
-
-    public void setValueType(String valueType) {
-        this.valueType = valueType;
-    }
-
-    public Message(String who, String whom, String keyMessage, String valueMessage, String valueType) {
+    public Message(String who, String whom, String keyMessage, String valueMessage) {
         this.who = who;
         this.whom = whom;
         this.keyMessage = keyMessage;
         this.valueMessage = valueMessage;
-        this.valueType = valueType;
     }
 
     public Message() {

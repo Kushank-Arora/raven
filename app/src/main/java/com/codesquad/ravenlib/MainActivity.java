@@ -8,6 +8,10 @@ import android.widget.EditText;
 
 import com.codesquad.raven.Raven;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -20,7 +24,11 @@ public class MainActivity extends AppCompatActivity {
     public void onSendClick(View view) {
         String name = ((EditText)findViewById(R.id.text_name)).getText().toString();
         String moreDate = ((EditText) findViewById(R.id.text_more)).getText().toString();
-        Person person = new Person(name, moreDate);
+        List<Person> person = new ArrayList<>(Arrays.asList(
+                new Person(name, moreDate),
+                new Person(name, moreDate),
+                new Person(name, moreDate)
+        ));
 
         Raven.startCommunication(this, AnotherActivity.class)
                 .add("SOME", person)
